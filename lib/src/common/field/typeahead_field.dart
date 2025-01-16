@@ -150,11 +150,14 @@ class _RawTypeAheadFieldState<T> extends State<RawTypeAheadField<T>> {
   late TextEditingController controller;
   late FocusNode focusNode;
 
+  FocusAttachment? focusAttachment;
+
   @override
   void initState() {
     super.initState();
     controller = widget.controller ?? TextEditingController();
     focusNode = widget.focusNode ?? FocusNode();
+    focusAttachment = focusNode.attach(context);
   }
 
   @override
@@ -167,15 +170,19 @@ class _RawTypeAheadFieldState<T> extends State<RawTypeAheadField<T>> {
       controller = widget.controller ?? TextEditingController();
     }
     if (oldWidget.focusNode != widget.focusNode) {
+      focusAttachment!.detach();
       if (oldWidget.focusNode == null) {
         focusNode.dispose();
       }
       focusNode = widget.focusNode ?? FocusNode();
+      focusAttachment = focusNode.attach(context);
     }
   }
 
   @override
   void dispose() {
+    focusAttachment?.detach();
+
     if (widget.controller == null) {
       controller.dispose();
     }
@@ -227,6 +234,7 @@ class _RawTypeAheadFieldState<T> extends State<RawTypeAheadField<T>> {
         listBuilder: widget.listBuilder,
       ),
       child: PointerInterceptor(
+        intercepting: false,
         child: widget.builder(
           context,
           controller,
